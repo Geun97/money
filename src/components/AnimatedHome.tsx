@@ -6,11 +6,14 @@ import Link from "next/link";
 type Post = {
   id: string;
   title: string;
-  slug: string;
-  summary: string;
-  category: string;
+  slug?: string | null;
+  summary?: string | null;
+  category?: string | null;
   created_at: string;
-  thumbnail_url: string | null;
+  thumbnail_url?: string | null;
+  thumbnail?: string | null;
+  image_url?: string | null;
+  cover_image?: string | null;
 };
 
 export default function AnimatedHome({ posts }: { posts: Post[] }) {
@@ -58,16 +61,19 @@ export default function AnimatedHome({ posts }: { posts: Post[] }) {
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
                   className="group flex flex-col"
                 >
-                  <Link href={`/posts/${post.slug || post.id}`} className="block h-full">
-                    <div className="aspect-[4/3] bg-gray-100 mb-4 rounded-sm overflow-hidden relative">
-                      {post.thumbnail_url ? (
-                        <img src={post.thumbnail_url} alt={post.title} className="object-cover w-full h-full" />
-                      ) : (
-                        <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-300 flex items-center justify-center text-gray-400 text-sm">
-                          No Image
-                        </div>
-                      )}
-                    </div>
+                  <Link
+                    href={`/posts/${encodeURIComponent((post.slug && post.slug.trim()) ? post.slug.trim() : String(post.id))}`}
+                    className="block h-full"
+                  >
+                    {(post.thumbnail_url || post.thumbnail || post.image_url || post.cover_image) && (
+                      <div className="aspect-[4/3] mb-4 rounded-sm overflow-hidden">
+                        <img
+                          src={post.thumbnail_url || post.thumbnail || post.image_url || post.cover_image || ""}
+                          alt={post.title}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    )}
                     <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider mb-2">
                       <span className="text-black">{post.category || "미분류"}</span>
                       <span className="text-gray-400">{date}</span>
@@ -76,7 +82,7 @@ export default function AnimatedHome({ posts }: { posts: Post[] }) {
                       {post.title}
                     </h3>
                     <p className="text-gray-600 text-sm line-clamp-3">
-                      {post.summary}
+                      {post.summary ?? ""}
                     </p>
                   </Link>
                 </motion.article>
