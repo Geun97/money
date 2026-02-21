@@ -1,16 +1,15 @@
 import { supabase } from "@/lib/supabase";
 import AnimatedHome from "@/components/AnimatedHome";
 
-// Next.js ISR (Incremental Static Regeneration) 설정 
-// 60초마다 새 글이 있는지 확인해서 백그라운드에서 페이지를 갱신합니다 (SEO 최적화)
-export const revalidate = 60;
+// 배포 직후 빌드 캐시 때문에 글이 안 보이는 것 방지: 매 요청마다 Supabase에서 조회
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function Home() {
-  // Supabase에서 블로그 포스트 가져오기 (is_published가 true이거나 null인 글 포함)
+  // Supabase에서 블로그 포스트 전체 조회 (원인 파악 후 필요 시 is_published 조건 복구)
   const { data: posts, error } = await supabase
     .from('blog_posts')
     .select('*')
-    .or('is_published.eq.true,is_published.is.null')
     .order('created_at', { ascending: false });
 
   if (error) {
