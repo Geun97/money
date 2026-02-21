@@ -1,9 +1,11 @@
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import AdSenseUnit from "@/components/AdSenseUnit";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -196,10 +198,35 @@ export default async function PostPage({ params }: Props) {
         </div>
       )}
 
-      {/* 본문: Markdown 렌더링 */}
-      <div className="prose prose-lg prose-neutral max-w-none break-keep">
-        <ReactMarkdown>{content}</ReactMarkdown>
+      {/* 글 상단 애드센스 (슬롯 ID는 환경 변수 또는 아래 slot 값 교체) */}
+      <AdSenseUnit slot={process.env.NEXT_PUBLIC_ADSENSE_POST_SLOT} />
+
+      {/* 본문: Markdown 렌더링 (링크 활성화, URL 자동 링크) */}
+      <div className="prose prose-lg prose-neutral max-w-none break-keep prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-a:break-all">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            a: ({ href, children, ...props }) => {
+              const isExternal = href?.startsWith("http");
+              return (
+                <a
+                  href={href}
+                  target={isExternal ? "_blank" : undefined}
+                  rel={isExternal ? "noopener noreferrer" : undefined}
+                  {...props}
+                >
+                  {children}
+                </a>
+              );
+            },
+          }}
+        >
+          {content}
+        </ReactMarkdown>
       </div>
+
+      {/* 글 하단 애드센스 */}
+      <AdSenseUnit slot={process.env.NEXT_PUBLIC_ADSENSE_POST_SLOT} />
     </article>
   );
 }
